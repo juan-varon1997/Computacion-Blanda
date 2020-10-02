@@ -1,0 +1,212 @@
+# COMPUTACIÓN BLANDA - Sistemas y Computación
+
+# ------------------------------------------------- ----------------
+# AJUSTES POLINOMIALES
+# ------------------------------------------------- ----------------
+# Lección 06
+#
+# ** Se importan los archivos de trabajo
+# ** Se crean las variables
+# ** Se generan los modelos
+# ** Se grafican las funciones
+#
+# ------------------------------------------------- ----------------
+# Se importa la librería del Sistema Operativo
+# Igualmente, la librería utils y numpy
+# ------------------------------------------------- ----------------
+importar sistema operativo
+# Directorios: chart y data en el directorio de trabajo
+# ------------------------------------------------- ----------------
+desde utils importar DATA_DIR, CHART_DIR
+importar numpy como np
+# Se eliminan las advertencias por el uso de funciones que
+# en el futuro cambiarán
+# ------------------------------------------------- ----------------
+np.seterr (todo = 'ignorar')
+# Se importa la librería scipy y matplotlib
+# ------------------------------------------------- ----------------
+importar scipy como sp
+importar matplotlib.pyplot como plt
+# Datos de trabajo
+# ------------------------------------------------- ----------------
+data = np.genfromtxt (os.path.join (DATA_DIR, "web_traffic.tsv"), delimiter = "\ t")
+# Se establece el tipo de dato
+datos = np.array (datos, dtype = np.float64)
+imprimir (datos [: 10])
+imprimir (data.shape)
+# Todos los ejemplos tienen tres clases en este archivo
+# ------------------------------------------------- ----------------
+colores = ['g', 'k', 'b', 'm', 'r']
+linestyles = ['-', '-.', '-', ':', '-']
+
+x = datos [:, 0]
+y = datos [:, 1]
+print ("Número de entradas incorrectas:", np.sum (np.isnan (y)))
+# Se eliminan los datos incorrectos
+# ------------------------------------------------- ----------------
+x = x [~ np.isnan (y)]
+y = y [~ np.isnan (y)]
+# CON ESTA FUNCIÓN SE DEFINE UN MODELO, EL CUAL CONTIENE
+# el comportamiento de un ajuste con base en un grado polinomial
+# elegido
+# ------------------------------------------------- ----------------
+def plot_models (x, y, modelos, fname, mx = Ninguno, ymax = Ninguno, xmin = Ninguno):
+    '' 'dibujar datos de entrada' ''
+    plt.figure (num = None, figsize = (8, 6))
+    plt.clf ()
+    dispersión plt (x, y, s = 10)
+    plt.title ("Tráfico Web en el último mes")
+    plt.xlabel ("Tiempo")
+    plt.ylabel ("Solicitudes / Hora")
+    plt.xticks (
+        [w * 7 * 24 para w en el rango (10)],
+        ['semana% i'% w para w en el rango (10)])
+    si modelos:
+        si mx es None:
+            mx = np.linspace (0, x [-1], 1000)
+# ------------------------------------------------- -------------------------------------------
+# Aquí se realiza un ciclo donde se recorren los diferentes puntos
+# del grafico generando diferentes ternas de modelo, estilo de linea y color
+        por modelo, estilo, color en cremallera (modelos, estilos de ropa, colores):
+           #Se generan las líneas de tendencia en cada uno de los gráficos
+           plt.plot (mx, modelo (mx), estilo de línea = estilo, ancho de línea = 2, c = color)
+        #Texto que indica el orden de la línea de tendencia realizada anteriormente
+        plt.legend (["d =% i"% m.order for m en modelos], loc = "superior izquierda")
+    # Función de matplotlib que determina la escala automáticamente dependiendo del intervalo
+    #en el que se encuentran los datos
+    plt.autoscale (ajustado = verdadero)
+    #Define el límite mínimo de y en su origen
+    plt.ylim (ymin = 0)
+    #Atributo que define el valor límite de xoy para graficar
+    si ymax:
+        plt.ylim (ymax = ymax)
+    si xmin:
+        plt.xlim (xmin = xmin)
+    #Dibuja la cuadrícula de referencia en el plano cartesiano
+    plt.grid (True, linestyle = '-', color = '0.75')
+    #Guarda la figura generada en el código
+    plt.savefig (fname)
+# Primera mirada a los datos
+# ------------------------------------------------- ----------------
+#Guarda los graficos generados por el código en la carpeta charts
+plot_models (x, y, None, os.path.join (CHART_DIR, "1400_01_01.png"))
+# Crea y dibuja los modelos de datos
+# ------------------------------------------------- ----------------
+#En la función polyfit se crea un listado con los coeficientes del polinomio de orden n
+fp1, res1, rank1, sv1, rcond1 = np.polyfit (x, y, 1, full = True)
+print ("Parámetros del modelo fp1:% s"% fp1)
+print ("Error del modelo fp1:", res1)
+# En la función poly1d sirve como ayuda para definir la función polinomial
+f1 = sp.poly1d (fp1)
+#En la función polyfit se crea un listado con los coeficientes del polinomio de orden n en este de grado 2 
+fp2, res2, rank2, sv2, rcond2 = np.polyfit (x, y, 2, full = True)
+print ("Parámetros del modelo fp2:% s"% fp2)
+print ("Error del modelo fp2:", res2)
+f2 = sp.poly1d (fp2)
+#En la función polyfit se crea un listado con los coeficientes del polinomio de orden n en este de grado 3
+f3 = sp.poly1d (np.polyfit (x, y, 3))
+f10 = sp.poly1d (np.polyfit (x, y, 10))
+f100 = sp.poly1d (np.polyfit (x, y, 100))
+
+# Se grafican los modelos
+# ------------------------------------------------- ----------------
+#Crea los tres archivos de imagen y guarda en ellos los gráficos, y los ubica en
+#la carpeta charts todo esto utilizando la utilidad archivo 
+plot_models (x, y, [f1], os.path.join (CHART_DIR, "1400_01_02.png"))
+plot_models (x, y, [f1, f2], os.path.join (CHART_DIR, "1400_01_03.png"))
+plot_models (x, y, [f1, f2, f3, f10, f100], os.path.join (CHART_DIR, "1400_01_04.png"))
+
+# Ajusta y dibuja un modelo utilizando el conocimiento del punto
+# de inflexión
+# ------------------------------------------------- ----------------
+inflexión = 3,5 * 7 * 24
+xa = x [: int (inflexión)]
+ya = y [: int (inflexión)]
+xb = x [int (inflexión):]
+yb = y [int (inflexión):]
+
+# Se grafican dos líneas rectas
+# ------------------------------------------------- ----------------
+fa = sp.poly1d (np.polyfit (xa, ya, 1))
+fb = sp.poly1d (np.polyfit (xb, yb, 1))
+
+# Se presenta el modelo basado en el punto de inflexión
+# ------------------------------------------------- ----------------
+plot_models (x, y, [fa, fb], os.path.join (CHART_DIR, "1400_01_05.png"))
+
+# Función de error
+# ------------------------------------------------- ----------------
+#Se define la diferenica entre los puntos reales y los puntos virtuales
+def error (f, x, y):
+    return np.sum ((f (x) - y) ** 2)
+# Se imprimen los errores
+# ------------------------------------------------- ----------------
+print ("Errores para el conjunto completo de datos:")
+#MUESTRA EL ERROR DEFINIDO ANTERIORMENTE PARA CADA ORDEN
+para f en [f1, f2, f3, f10, f100]:
+    print ("Error d =% i:% f"% (f.order, error (f, x, y)))
+print ("Errores solamente después del punto de inflexión")
+para f en [f1, f2, f3, f10, f100]:
+    print ("Error d =% i:% f"% (f.order, error (f, xb, yb)))
+print ("Error de inflexión =% f"% (error (fa, xa, ya) + error (fb, xb, yb)))
+
+# Se extrapola de modo que se proyecten respuestas en el futuro
+# ------------------------------------------------- ----------------
+plot_models (
+    x, y, [f1, f2, f3, f10, f100],
+    #Guarda el modelo en la carpeta charts con sus atributos atributos para la
+    #proyecccion a analizar 
+    os.path.join (CHART_DIR, "1400_01_06.png"),
+    mx = np.linspace (0 * 7 * 24, 6 * 7 * 24, 100), ymax = 10000, xmin = 0 * 7 * 24)
+
+
+#HASTA AQUI ES LA TAREA EN SU FASE DE ENTENDIMIENTO Y GENERACIÓN DE COMENTARIOS POR LÍNEA
+print ("Entrenamiento de datos únicamente después del punto de inflexión")
+fb1 = fb
+fb2 = sp.poly1d (np.polyfit (xb, yb, 2))
+fb3 = sp.poly1d (np.polyfit (xb, yb, 3))
+fb10 = sp.poly1d (np.polyfit (xb, yb, 10))
+fb100 = sp.poly1d (np.polyfit (xb, yb, 100))
+
+print ("Errores después del punto de inflexión")
+para f en [fb1, fb2, fb3, fb10, fb100]:
+    print ("Error d =% i:% f"% (f.order, error (f, xb, yb)))
+
+# Gráficas después del punto de inflexión
+# ------------------------------------------------- ----------------
+plot_models (
+    x, y, [fb1, fb2, fb3, fb10, fb100],
+    os.path.join (CHART_DIR, "1400_01_07.png"),
+    mx = np.linspace (0 * 7 * 24, 6 * 7 * 24, 100),
+    ymax = 10000, xmin = 0 * 7 * 24)
+
+# Separa el entrenamiento de los datos de prueba
+# ------------------------------------------------- ----------------
+frac = 0.3
+split_idx = int (frac * len (xb))
+shuffled = sp.random.permutation (list (range (len (xb))))
+prueba = ordenado (mezclado [: split_idx])
+tren = ordenado (mezclado [split_idx:])
+fbt1 = sp.poly1d (np.polyfit (xb [tren], yb [tren], 1))
+fbt2 = sp.poly1d (np.polyfit (xb [tren], yb [tren], 2))
+imprimir ("fbt2 (x) = \ n% s"% fbt2)
+print ("fbt2 (x) -100,000 = \ n% s"% (fbt2-100000))
+fbt3 = sp.poly1d (np.polyfit (xb [tren], yb [tren], 3))
+fbt10 = sp.poly1d (np.polyfit (xb [tren], yb [tren], 10))
+fbt100 = sp.poly1d (np.polyfit (xb [tren], yb [tren], 100))
+
+print ("Prueba de error para después del punto de inflexión")
+para f en [fbt1, fbt2, fbt3, fbt10, fbt100]:
+    print ("Error d =% i:% f"% (f.order, error (f, xb [prueba], yb [prueba])))
+
+plot_models (
+    x, y, [fbt1, fbt2, fbt3, fbt10, fbt100],
+    os.path.join (CHART_DIR, "1400_01_08.png"),
+    mx = np.linspace (0 * 7 * 24, 6 * 7 * 24, 100),
+    ymax = 10000, xmin = 0 * 7 * 24)
+
+desde scipy.optimize import fsolve
+imprimir (fbt2)
+imprimir (fbt2 - 100000)
+alcanzado_max = fsolve (fbt2 - 100000, x0 = 800) / (7 * 24)
+print ("\ n100,000 solicitudes / hora esperados en la semana% f"% alcanzado_max [0])
