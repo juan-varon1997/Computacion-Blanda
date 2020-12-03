@@ -1,0 +1,1 @@
+Pude realizar la instalacion correctamente de TensorFlow y OpenCV.
